@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LuxeAura Jewellery{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A84C;
+            --gold-light: #E8C97A;
+            --gold-dark: #8B6914;
+            --cream: #FAF7F2;
+            --dark: #1A1614;
+            --charcoal: #2D2926;
+            --mid: #6B5E52;
+            --light-border: #E8DDD0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--dark); }
+
+        /* NAV */
+        nav {
+            background: var(--dark);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        .nav-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--gold);
+            text-decoration: none;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .nav-logo span { color: #fff; font-style: italic; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; list-style: none; }
+        .nav-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+        .nav-cart-btn {
+            background: var(--gold);
+            color: var(--dark) !important;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            border-radius: 2px;
+        }
+        .nav-cart-btn:hover { background: var(--gold-light) !important; color: var(--dark) !important; }
+
+        /* MESSAGES */
+        .messages-container { padding: 1rem 2rem 0; }
+        .alert {
+            padding: 0.9rem 1.2rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .alert-error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+
+        /* MAIN */
+        main { min-height: calc(100vh - 70px - 200px); }
+
+        /* FOOTER */
+        footer {
+            background: var(--dark);
+            color: #999;
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+        footer .footer-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        footer p { font-size: 0.8rem; letter-spacing: 1px; }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'Jost', sans-serif;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+        .btn-gold { background: var(--gold); color: var(--dark); font-weight: 500; }
+        .btn-gold:hover { background: var(--gold-light); }
+        .btn-outline { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+        .btn-outline:hover { background: var(--gold); color: var(--dark); }
+        .btn-dark { background: var(--dark); color: #fff; }
+        .btn-dark:hover { background: var(--charcoal); }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:hover { background: #e74c3c; }
+        .btn-sm { padding: 0.4rem 1rem; font-size: 0.75rem; }
+
+        /* FORMS */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--mid);
+            margin-bottom: 0.4rem;
+        }
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--light-border);
+            background: #fff;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.95rem;
+            color: var(--dark);
+            outline: none;
+            transition: border-color 0.3s;
+            border-radius: 2px;
+        }
+        .form-control:focus, .form-select:focus { border-color: var(--gold); }
+        textarea.form-control { resize: vertical; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: var(--dark);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .page-header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        .page-header p { color: #999; font-size: 0.85rem; letter-spacing: 2px; margin-top: 0.5rem; }
+
+        /* CARDS */
+        .product-card {
+            background: #fff;
+            border: 1px solid var(--light-border);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+        .product-card img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+        }
+        .product-card-img-placeholder {
+            width: 100%;
+            height: 260px;
+            background: linear-gradient(135deg, #f5efe6, #ede0d0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        .product-card-body { padding: 1.2rem; }
+        .product-card-category {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 0.3rem;
+        }
+        .product-card-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+        .product-card-price {
+            font-size: 1rem;
+            color: var(--gold-dark);
+            font-weight: 500;
+        }
+        .product-card-footer {
+            padding: 0.8rem 1.2rem;
+            border-top: 1px solid var(--light-border);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* GRID */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 2rem;
+        }
+
+        /* CONTAINER */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+        /* TAG */
+        .tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 20px;
+            background: var(--light-border);
+            color: var(--mid);
+        }
+        .tag-women { background: #fce4ec; color: #c2185b; }
+        .tag-men { background: #e3f2fd; color: #1565c0; }
+        .tag-both { background: #f3e5f5; color: #6a1b9a; }
+
+        /* TABLE */
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--light-border); }
+        .table th { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); background: #f9f5f0; }
+        .table tr:hover td { background: #fdf9f4; }
+
+        /* STATUS */
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-shipped { background: #cce5ff; color: #004085; }
+        .status-delivered { background: #d4edda; color: #155724; }
+
+        /* DIVIDER */
+        .gold-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--gold);
+            margin: 1rem auto;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <a href="{% url 'home' %}" class="nav-logo">Luxe<span>Aura</span></a>
+        <ul class="nav-links">
+            {% if user.is_authenticated and not user.is_staff %}
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'shop' %}">Shop</a></li>
+                <li><a href="{% url 'order_history' %}">My Orders</a></li>
+                <li><a href="{% url 'profile' %}">Profile</a></li>
+                <li><a href="{% url 'cart' %}" class="nav-cart-btn">🛒 Cart</a></li>
+                <li>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none;border:none;color:#ccc;cursor:pointer;font-family:'Jost';font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;">Logout</button>
+                    </form>
+                </li>
+            {% elif user.is_authenticated and user.is_staff %}
+                <li><a href="{% url 'home' %}">Store</a></li>
+                <li><a href="{% url 'admin_dashboard' %}" style="color:var(--gold);">Admin Panel</a></li>
+                <li>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none;border:none;color:#ccc;cursor:pointer;font-family:'Jost';font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;">Logout</button>
+                    </form>
+                </li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Sign In</a></li>
+                <li><a href="{% url 'register' %}" class="nav-cart-btn">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer>
+        <div class="footer-logo">LuxeAura</div>
+        <p>Crafted with elegance · Designed for life</p>
+        <p style="margin-top:0.5rem">© 2024 LuxeAura Jewellery</p>
+    </footer>
+</body>
+</html>

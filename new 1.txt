@@ -1,0 +1,2 @@
+demo online payment 
+receipt send to user mail id

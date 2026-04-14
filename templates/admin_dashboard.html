@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel — LuxeAura{% endblock %}
+{% block extra_css %}
+<style>
+.admin-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 70px); }
+.admin-sidebar {
+    background: var(--dark);
+    padding: 2rem 0;
+    position: sticky;
+    top: 70px;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+}
+.admin-sidebar h4 {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #666;
+    padding: 0 1.5rem;
+    margin: 1.5rem 0 0.5rem;
+}
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1.5rem;
+    text-decoration: none;
+    color: #aaa;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+.admin-nav-link:hover, .admin-nav-link.active {
+    color: var(--gold);
+    background: rgba(201,168,76,0.08);
+    border-left-color: var(--gold);
+}
+.admin-main { padding: 2rem; background: #f4f1ec; }
+.admin-header { margin-bottom: 2rem; }
+.admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; }
+.admin-header p { color: var(--mid); font-size: 0.9rem; }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+.stat-card { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; padding: 1.5rem; }
+.stat-card .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 400; color: var(--gold-dark); }
+.stat-card .stat-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-top: 0.3rem; }
+.stat-card .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+/* Panels */
+.admin-panel { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; margin-bottom: 2rem; overflow: hidden; }
+.admin-panel-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--light-border); display: flex; justify-content: space-between; align-items: center; background: #faf7f2; }
+.admin-panel-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; }
+.admin-panel-body { padding: 1.5rem; }
+
+/* Action row */
+.action-row { display: flex; gap: 0.5rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <nav class="admin-sidebar">
+        <div style="padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);letter-spacing:2px;">Admin Panel</div>
+            <div style="font-size:0.75rem;color:#666;margin-top:0.2rem">{{ request.user.email }}</div>
+        </div>
+        <h4>Overview</h4>
+        <a href="{% url 'admin_dashboard' %}" class="admin-nav-link active">📊 Dashboard</a>
+        <h4>Catalogue</h4>
+        <a href="{% url 'admin_add_product' %}" class="admin-nav-link">➕ Add New Item</a>
+        <a href="{% url 'admin_products' %}" class="admin-nav-link">💎 Manage Items</a>
+        <h4>Orders</h4>
+        <a href="{% url 'admin_orders' %}" class="admin-nav-link">📦 All Orders</a>
+        <h4>Account</h4>
+        <a href="{% url 'home' %}" class="admin-nav-link">🏠 View Store</a>
+        <form method="POST" action="{% url 'logout' %}" style="margin: 0 1rem;">
+            {% csrf_token %}
+            <button type="submit" style="width:100%;background:rgba(220,53,69,0.15);color:#e87d7d;border:1px solid rgba(220,53,69,0.3);padding:0.6rem;border-radius:4px;cursor:pointer;font-family:'Jost';font-size:0.8rem;letter-spacing:1px;margin-top:1rem;">
+                Logout
+            </button>
+        </form>
+    </nav>
+
+    <!-- Main -->
+    <div class="admin-main">
+        <div class="admin-header">
+            <h1>Welcome, Admin</h1>
+            <p>Here's an overview of your jewellery store</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-num">{{ total_orders }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-num">{{ total_products }}</div>
+                <div class="stat-label">Products Listed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-num">{{ total_users }}</div>
+                <div class="stat-label">Registered Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-num">₹{{ total_revenue|floatformat:0 }}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="admin-panel">
+            <div class="admin-panel-header">
+                <h2>Recent Orders</h2>
+                <a href="{% url 'admin_orders' %}" class="btn btn-outline btn-sm">View All</a>
+            </div>
+            <div class="admin-panel-body" style="padding:0">
+                {% if recent_orders %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td><strong>#{{ order.id }}</strong></td>
+                            <td>{{ order.user.username }}</td>
+                            <td>₹{{ order.total_price }}</td>
+                            <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
+                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                            <td class="action-row">
+                                <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-outline btn-sm">View</a>
+                                <a href="{% url 'admin_download_bill' order.id %}" class="btn btn-gold btn-sm">📄 Bill</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div style="text-align:center;padding:3rem;color:var(--mid)">No orders yet.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Products -->
+        <div class="admin-panel">
+            <div class="admin-panel-header">
+                <h2>Recently Added Products</h2>
+                <a href="{% url 'admin_add_product' %}" class="btn btn-gold btn-sm">+ Add Item</a>
+            </div>
+            <div class="admin-panel-body" style="padding:0">
+                {% if recent_products %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>For</th>
+                            <th>Stock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in recent_products %}
+                        <tr>
+                            <td><strong>{{ product.name }}</strong></td>
+                            <td>{{ product.category.name }}</td>
+                            <td>₹{{ product.price }}</td>
+                            <td><span class="tag tag-{{ product.for_whom|lower }}">{{ product.for_whom }}</span></td>
+                            <td>{{ product.stock }}</td>
+                            <td class="action-row">
+                                <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-outline btn-sm">Edit</a>
+                                <form method="POST" action="{% url 'admin_delete_product' product.id %}" onsubmit="return confirm('Delete this product?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div style="text-align:center;padding:3rem;color:var(--mid)">No products yet. <a href="{% url 'admin_add_product' %}" style="color:var(--gold)">Add your first item →</a></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

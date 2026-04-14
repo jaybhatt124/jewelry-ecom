@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}My Orders — LuxeAura{% endblock %}
+{% block extra_css %}
+<style>
+.order-card { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+.order-header { background: #f9f5f0; padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--light-border); }
+.order-id { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; }
+.order-date { font-size: 0.8rem; color: var(--mid); }
+.order-items { padding: 1.5rem; }
+.order-item-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f5f0ea; font-size: 0.9rem; }
+.order-footer { padding: 1rem 1.5rem; background: #f9f5f0; display: flex; justify-content: space-between; align-items: center; }
+.order-total { font-size: 1.1rem; font-weight: 600; color: var(--gold-dark); }
+.confirmation-banner { background: linear-gradient(135deg, #1a4d2e, #2d6a4f); color: #fff; padding: 2rem; border-radius: 8px; text-align: center; margin-bottom: 2rem; }
+.confirmation-banner h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; margin-bottom: 0.5rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>My Orders</h1>
+    <p>Track your purchase history</p>
+</div>
+<div class="container" style="padding: 2rem;">
+    {% if orders %}
+        {% if orders.0.status == 'Pending' and orders|length == 1 %}
+        <!-- Show only if just placed -->
+        {% endif %}
+
+    {% for order in orders %}
+    {% if forloop.first and request.GET.new %}
+    <div class="confirmation-banner">
+        <div style="font-size:3rem">✅</div>
+        <h2>Order Confirmed!</h2>
+        <p>Thank you for your order. We will deliver your jewellery soon.</p>
+    </div>
+    {% endif %}
+    <div class="order-card">
+        <div class="order-header">
+            <div>
+                <div class="order-id">Order #{{ order.id }}</div>
+                <div class="order-date">Placed on {{ order.created_at|date:"F d, Y · g:i A" }}</div>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:center">
+                <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+            </div>
+        </div>
+        <div class="order-items">
+            {% for item in order.items.all %}
+            <div class="order-item-row">
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <span>₹{{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+            <div style="font-size:0.85rem;color:var(--mid);margin-top:0.8rem">
+                📍 Delivery: {{ order.address }}
+            </div>
+        </div>
+        <div class="order-footer">
+            <div class="order-total">Total: ₹{{ order.total_price }}</div>
+            <div style="font-size:0.8rem;color:var(--mid)">💳 Cash on Delivery</div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:5rem">
+        <p style="font-size:4rem">📦</p>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;margin:1rem 0">No orders yet</h2>
+        <p style="color:var(--mid);margin-bottom:2rem">Your order history will appear here</p>
+        <a href="{% url 'shop' %}" class="btn btn-gold">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

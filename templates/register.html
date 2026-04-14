@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — LuxeAura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A84C; --gold-light: #E8C97A; --gold-dark: #8B6914;
+            --dark: #1A1614; --mid: #6B5E52; --light-border: #E8DDD0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Jost', sans-serif;
+            background: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: -20%;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .auth-wrapper { width: 100%; max-width: 460px; position: relative; z-index: 1; }
+        .auth-logo { text-align: center; margin-bottom: 2rem; }
+        .auth-logo h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.8rem; font-weight: 300;
+            color: var(--gold); letter-spacing: 6px; text-transform: uppercase; line-height: 1;
+        }
+        .auth-logo h1 em { color: #fff; font-style: italic; }
+        .auth-logo p { font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase; color: #666; margin-top: 0.4rem; }
+        .auth-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 12px;
+            padding: 2.5rem;
+        }
+        .auth-card h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 400; color: #fff; margin-bottom: 0.3rem; }
+        .auth-card .subtitle { font-size: 0.82rem; color: #666; margin-bottom: 2rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 0.5rem; }
+        .form-group input {
+            width: 100%; padding: 0.85rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; color: #fff;
+            font-family: 'Jost', sans-serif; font-size: 0.95rem;
+            outline: none; transition: border-color 0.3s, background 0.3s;
+        }
+        .form-group input:focus { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+        .form-group input::placeholder { color: #555; }
+
+        /* Password strength indicator */
+        .password-strength { margin-top: 0.4rem; display: flex; gap: 4px; }
+        .strength-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; transition: background 0.3s; }
+        .strength-bar.weak { background: #e74c3c; }
+        .strength-bar.medium { background: #f39c12; }
+        .strength-bar.strong { background: #27ae60; }
+        .strength-label { font-size: 0.7rem; color: #666; margin-top: 0.3rem; }
+
+        .btn-submit {
+            width: 100%; padding: 0.95rem;
+            background: var(--gold); color: var(--dark);
+            border: none; border-radius: 6px;
+            font-family: 'Jost', sans-serif; font-size: 0.85rem; font-weight: 500;
+            letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; transition: background 0.3s, transform 0.1s;
+        }
+        .btn-submit:hover { background: var(--gold-light); }
+        .btn-submit:active { transform: scale(0.99); }
+        .divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+        .divider span { font-size: 0.75rem; color: #555; letter-spacing: 2px; }
+        .auth-footer { text-align: center; }
+        .auth-footer p { font-size: 0.85rem; color: #666; }
+        .auth-footer a { color: var(--gold); text-decoration: none; font-weight: 500; }
+        .auth-footer a:hover { color: var(--gold-light); }
+        .field-error { font-size: 0.78rem; color: #e07080; margin-top: 0.3rem; }
+        .error-box {
+            background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.3);
+            border-radius: 6px; padding: 0.8rem 1rem; margin-bottom: 1.2rem;
+            font-size: 0.85rem; color: #f08090;
+        }
+        /* Terms note */
+        .terms-note { font-size: 0.75rem; color: #555; text-align: center; margin-top: 1rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-logo">
+            <h1>Luxe<em>Aura</em></h1>
+            <p>Fine Jewellery</p>
+        </div>
+
+        <div class="auth-card">
+            <h2>Create Account</h2>
+            <p class="subtitle">Join LuxeAura and discover fine jewellery</p>
+
+            {% if form.non_field_errors %}
+            <div class="error-box">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" name="username" placeholder="Choose a username"
+                           value="{{ form.username.value|default:'' }}" autocomplete="username">
+                    {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" name="email" placeholder="your@email.com"
+                           value="{{ form.email.value|default:'' }}" autocomplete="email">
+                    {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" name="password" id="password-field"
+                               placeholder="Min. 6 characters" autocomplete="new-password"
+                               oninput="checkStrength(this.value)">
+                        <div class="password-strength">
+                            <div class="strength-bar" id="bar1"></div>
+                            <div class="strength-bar" id="bar2"></div>
+                            <div class="strength-bar" id="bar3"></div>
+                        </div>
+                        <div class="strength-label" id="strength-label"></div>
+                        {% if form.password.errors %}<div class="field-error">{{ form.password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm *</label>
+                        <input type="password" name="confirm_password"
+                               placeholder="Repeat password" autocomplete="new-password">
+                        {% if form.confirm_password.errors %}<div class="field-error">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Create My Account</button>
+            </form>
+
+            <p class="terms-note">By registering you agree to receive order updates via email.</p>
+
+            <div class="divider"><span>or</span></div>
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function checkStrength(val) {
+        const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
+        const label = document.getElementById('strength-label');
+        bars.forEach(b => b.className = 'strength-bar');
+        if (!val) { label.textContent = ''; return; }
+        let score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+        const levels = ['', 'weak', 'medium', 'strong'];
+        const names = ['', 'Weak', 'Good', 'Strong'];
+        for (let i = 0; i < score; i++) bars[i].classList.add(levels[score]);
+        label.textContent = score ? names[score] : '';
+        label.style.color = score === 1 ? '#e74c3c' : score === 2 ? '#f39c12' : '#27ae60';
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed — LuxeAura{% endblock %}
+{% block extra_css %}
+<style>
+.confirm-page{min-height:calc(100vh - 270px);display:flex;align-items:center;justify-content:center;padding:3rem;}
+.confirm-card{background:#fff;border:1px solid var(--light-border);border-radius:12px;padding:3rem;max-width:620px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.08);}
+.check-icon{width:80px;height:80px;background:linear-gradient(135deg,#2ecc71,#27ae60);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 2rem;box-shadow:0 8px 25px rgba(46,204,113,.3);}
+.confirm-title{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;margin-bottom:.5rem;}
+.payment-badge{display:inline-flex;align-items:center;gap:.5rem;background:#d4edda;border:1px solid #b8dbc4;border-radius:20px;padding:.4rem 1rem;font-size:.8rem;color:#1e7e34;font-weight:500;margin-bottom:1.5rem;}
+.order-details-box{background:#f9f5f0;border:1px solid var(--light-border);border-radius:8px;padding:1.5rem;margin:1.5rem 0;text-align:left;}
+.detail-row{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--light-border);font-size:.9rem;}
+.detail-row:last-child{border:none;}
+.detail-row span:first-child{color:var(--mid);}
+.item-list{margin:1.5rem 0;text-align:left;}
+.item-row{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px dashed var(--light-border);font-size:.9rem;}
+.item-row:last-child{border:none;}
+.email-notice{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:1rem 1.2rem;margin:1.5rem 0;font-size:.85rem;color:#1a6fa0;display:flex;align-items:flex-start;gap:.6rem;text-align:left;}
+.actions{display:flex;gap:1rem;justify-content:center;margin-top:2rem;flex-wrap:wrap;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="confirm-page">
+    <div class="confirm-card">
+        <div class="check-icon">✓</div>
+        <h1 class="confirm-title">Payment Successful!</h1>
+        <div class="payment-badge">
+            💳 {{ order.payment_method }} &nbsp;·&nbsp; {{ order.payment_id }}
+        </div>
+        <p style="color:var(--mid);font-size:.95rem">
+            Thank you, <strong>{{ order.user.username }}</strong>. Your order has been confirmed and receipt sent to your email.
+        </p>
+
+        <div class="order-details-box">
+            <div class="detail-row"><span>Order Number</span><span><strong>#{{ order.id|stringformat:"05d" }}</strong></span></div>
+            <div class="detail-row"><span>Order Date</span><span>{{ order.created_at|date:"F d, Y · g:i A" }}</span></div>
+            <div class="detail-row"><span>Payment Method</span><span style="color:var(--gold-dark);font-weight:500">{{ order.payment_method }}</span></div>
+            <div class="detail-row"><span>Transaction ID</span><span style="font-family:monospace;font-size:.85rem">{{ order.payment_id }}</span></div>
+            <div class="detail-row"><span>Status</span><span><span class="status-badge status-pending">{{ order.status }}</span></span></div>
+            <div class="detail-row"><span>Delivery Address</span><span style="text-align:right;max-width:280px">{{ order.address }}</span></div>
+        </div>
+
+        <div class="item-list">
+            <p style="font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin-bottom:.5rem">Items Ordered</p>
+            {% for item in order.items.all %}
+            <div class="item-row">
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <span>₹{{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+            <div class="item-row" style="font-weight:600;color:var(--gold-dark);border-top:2px solid var(--gold);margin-top:.5rem;padding-top:.7rem">
+                <span>Total Paid</span><span>₹{{ order.total_price }}</span>
+            </div>
+        </div>
+
+        {% if order.user.email %}
+        <div class="email-notice">
+            <span style="font-size:1.2rem">📧</span>
+            <div>
+                A receipt has been sent to <strong>{{ order.user.email }}</strong> with full payment details and order summary.
+            </div>
+        </div>
+        {% else %}
+        <div class="email-notice" style="background:#fff8e1;border-color:#f0d080;color:#7a5f00">
+            <span>⚠️</span>
+            <div>No email on file. Add your email in <a href="{% url 'profile' %}" style="color:var(--gold)">Profile</a> to receive receipts.</div>
+        </div>
+        {% endif %}
+
+        <div style="background:linear-gradient(135deg,#1a3a2a,#2d6a4f);border-radius:8px;padding:1.2rem;color:#fff;font-size:.85rem;">
+            🚚 &nbsp;Expected delivery in <strong>3–5 business days</strong>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'order_history' %}" class="btn btn-outline">View All Orders</a>
+            <a href="{% url 'shop' %}" class="btn btn-gold">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

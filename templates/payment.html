@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment — LuxeAura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--gold:#C9A84C;--gold-light:#E8C97A;--gold-dark:#8B6914;--cream:#FAF7F2;--dark:#1A1614;--mid:#6B5E52;--border:#E8DDD0;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--dark);}
+
+        /* NAV */
+        nav{background:var(--dark);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+        .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--gold);text-decoration:none;letter-spacing:3px;}
+        .nav-logo span{color:#fff;font-style:italic;}
+        .secure-badge{display:flex;align-items:center;gap:6px;color:#aaa;font-size:0.78rem;letter-spacing:1px;}
+        .secure-dot{width:8px;height:8px;border-radius:50%;background:#27ae60;}
+
+        /* LAYOUT */
+        .page{max-width:1000px;margin:2.5rem auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start;}
+
+        /* PAYMENT CARD */
+        .pay-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+        .pay-card-header{padding:1.5rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+        .pay-card-header h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;}
+        .demo-tag{background:#fff3cd;border:1px solid #f0c040;color:#7a5f00;font-size:0.72rem;letter-spacing:1px;padding:3px 10px;border-radius:20px;}
+
+        /* TABS */
+        .pay-tabs{display:flex;border-bottom:1px solid var(--border);}
+        .pay-tab{flex:1;padding:0.9rem;text-align:center;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:var(--mid);border:none;background:none;font-family:'Jost',sans-serif;transition:all .2s;border-bottom:2px solid transparent;}
+        .pay-tab.active{color:var(--gold);border-bottom-color:var(--gold);background:#faf7f2;}
+        .pay-tab:hover{background:#faf7f2;}
+        .tab-icon{font-size:1.1rem;display:block;margin-bottom:3px;}
+
+        /* PANELS */
+        .tab-panel{display:none;padding:2rem;}
+        .tab-panel.active{display:block;}
+
+        .form-group{margin-bottom:1.3rem;}
+        .form-group label{display:block;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-bottom:.5rem;}
+        .form-group input,.form-group select{
+            width:100%;padding:.8rem 1rem;border:1px solid var(--border);
+            background:#fafafa;font-family:'Jost',sans-serif;font-size:.95rem;
+            color:var(--dark);outline:none;border-radius:6px;transition:border-color .3s;
+        }
+        .form-group input:focus,.form-group select:focus{border-color:var(--gold);background:#fff;}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+
+        /* Card visual */
+        .card-visual{
+            background:linear-gradient(135deg,#1A1614 0%,#3d2f1f 100%);
+            border-radius:12px;padding:1.5rem;color:#fff;
+            margin-bottom:1.5rem;min-height:140px;position:relative;overflow:hidden;
+        }
+        .card-visual::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(201,168,76,.15);}
+        .card-visual::after{content:'';position:absolute;bottom:-20px;left:30px;width:80px;height:80px;border-radius:50%;background:rgba(201,168,76,.08);}
+        .card-chip{width:36px;height:28px;background:var(--gold);border-radius:4px;margin-bottom:1rem;}
+        .card-number{font-size:1.1rem;letter-spacing:4px;font-family:'Courier New',monospace;color:#fff;margin-bottom:.8rem;}
+        .card-bottom{display:flex;justify-content:space-between;font-size:.78rem;color:#ccc;}
+        .card-bottom span b{display:block;color:#fff;font-size:.95rem;letter-spacing:2px;}
+
+        /* UPI panel */
+        .upi-banks{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem;}
+        .upi-bank{border:2px solid var(--border);border-radius:8px;padding:1rem .5rem;text-align:center;cursor:pointer;transition:all .2s;}
+        .upi-bank:hover,.upi-bank.selected{border-color:var(--gold);background:#faf7f2;}
+        .upi-bank span{font-size:1.4rem;display:block;margin-bottom:.3rem;}
+        .upi-bank p{font-size:.75rem;color:var(--mid);}
+        .upi-id-input{display:none;}
+        .upi-id-input.show{display:block;}
+
+        /* Wallet panel */
+        .wallet-list{display:flex;flex-direction:column;gap:.8rem;margin-bottom:1.5rem;}
+        .wallet-opt{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;border:2px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;}
+        .wallet-opt:hover,.wallet-opt.selected{border-color:var(--gold);background:#faf7f2;}
+        .wallet-icon{font-size:1.8rem;width:2.5rem;text-align:center;}
+        .wallet-opt h4{font-size:.95rem;margin-bottom:2px;}
+        .wallet-opt p{font-size:.78rem;color:var(--mid);}
+        .wallet-opt .radio{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;}
+        .wallet-opt.selected .radio::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--gold);display:block;}
+
+        /* Pay button */
+        .btn-pay{
+            width:100%;padding:1rem;background:var(--gold);color:var(--dark);
+            border:none;border-radius:8px;font-family:'Jost',sans-serif;
+            font-size:.9rem;font-weight:500;letter-spacing:2px;text-transform:uppercase;
+            cursor:pointer;transition:background .3s;
+        }
+        .btn-pay:hover{background:var(--gold-light);}
+
+        /* ORDER SUMMARY */
+        .summary-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:sticky;top:20px;}
+        .summary-header{background:var(--dark);padding:1.2rem 1.5rem;}
+        .summary-header h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--gold);font-weight:300;}
+        .summary-body{padding:1.2rem 1.5rem;}
+        .summary-item{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid #f5f0ea;font-size:.88rem;}
+        .summary-item:last-child{border:none;}
+        .summary-item span:first-child{color:var(--mid);}
+        .summary-total{display:flex;justify-content:space-between;padding:1rem 1.5rem;background:#faf7f2;border-top:2px solid var(--gold);}
+        .summary-total span:first-child{font-weight:500;}
+        .summary-total span:last-child{font-size:1.2rem;font-weight:600;color:var(--gold-dark);}
+        .delivery-box{padding:1rem 1.5rem;border-top:1px solid var(--border);}
+        .delivery-box p{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-bottom:.4rem;}
+        .delivery-box address{font-style:normal;font-size:.88rem;color:var(--dark);line-height:1.6;}
+        .secure-note{padding:.8rem 1.5rem;background:#f0faf4;border-top:1px solid #c8ecd4;font-size:.78rem;color:#1e7e34;display:flex;align-items:center;gap:.5rem;}
+
+        /* PROCESSING OVERLAY */
+        #processing-overlay{
+            display:none;position:fixed;inset:0;background:rgba(26,22,20,.92);
+            z-index:9999;flex-direction:column;align-items:center;justify-content:center;
+        }
+        #processing-overlay.show{display:flex;}
+        .spinner{
+            width:64px;height:64px;border:4px solid rgba(201,168,76,.2);
+            border-top-color:var(--gold);border-radius:50%;
+            animation:spin 1s linear infinite;margin-bottom:1.5rem;
+        }
+        @keyframes spin{to{transform:rotate(360deg);}}
+        .proc-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:#fff;margin-bottom:.5rem;}
+        .proc-sub{color:#aaa;font-size:.9rem;letter-spacing:1px;}
+        .proc-steps{margin-top:1.5rem;display:flex;flex-direction:column;gap:.4rem;}
+        .proc-step{font-size:.8rem;color:#888;display:flex;align-items:center;gap:.5rem;}
+        .proc-step.done{color:#6fcf87;}
+        .proc-step.active{color:var(--gold);}
+    </style>
+</head>
+<body>
+<nav>
+    <a href="{% url 'home' %}" class="nav-logo">Luxe<span>Aura</span></a>
+    <div class="secure-badge"><div class="secure-dot"></div> Secure Checkout</div>
+</nav>
+
+<div class="page">
+
+    <!-- LEFT: Payment form -->
+    <div>
+        <div class="pay-card">
+            <div class="pay-card-header">
+                <h2>Complete Payment</h2>
+                <span class="demo-tag">🧪 Demo Mode</span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="pay-tabs">
+                <button class="pay-tab active" onclick="switchTab('card',this)">
+                    <span class="tab-icon">💳</span>Card
+                </button>
+                <button class="pay-tab" onclick="switchTab('upi',this)">
+                    <span class="tab-icon">📱</span>UPI
+                </button>
+                <button class="pay-tab" onclick="switchTab('wallet',this)">
+                    <span class="tab-icon">👛</span>Wallet
+                </button>
+            </div>
+
+            <!-- CARD PANEL -->
+            <div class="tab-panel active" id="panel-card">
+                <!-- Visual card preview -->
+                <div class="card-visual">
+                    <div class="card-chip"></div>
+                    <div class="card-number" id="preview-num">•••• •••• •••• ••••</div>
+                    <div class="card-bottom">
+                        <div><span>Card Holder</span><b id="preview-name">YOUR NAME</b></div>
+                        <div><span>Expires</span><b id="preview-exp">MM/YY</b></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" id="card-num" placeholder="1234  5678  9012  3456" maxlength="19"
+                           oninput="fmtCard(this)" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Name on Card</label>
+                    <input type="text" id="card-name" placeholder="As printed on card"
+                           oninput="document.getElementById('preview-name').textContent=this.value.toUpperCase()||'YOUR NAME'">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="text" id="card-exp" placeholder="MM/YY" maxlength="5"
+                               oninput="fmtExp(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input type="password" id="card-cvv" placeholder="•••" maxlength="4">
+                    </div>
+                </div>
+                <form method="POST" action="{% url 'process_payment' %}" id="pay-form-card">
+                    {% csrf_token %}
+                    <input type="hidden" name="pay_method" value="Demo Card">
+                    <button type="submit" class="btn-pay" onclick="startProcessing()">
+                        Pay ₹{{ subtotal }}
+                    </button>
+                </form>
+                <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:#aaa">
+                    Use any card number — this is a demo payment only
+                </p>
+            </div>
+
+            <!-- UPI PANEL -->
+            <div class="tab-panel" id="panel-upi">
+                <p style="font-size:.85rem;color:var(--mid);margin-bottom:1rem">Select your UPI app</p>
+                <div class="upi-banks">
+                    <div class="upi-bank selected" onclick="selectUPI(this,'GPay')"><span>🟢</span><p>Google Pay</p></div>
+                    <div class="upi-bank" onclick="selectUPI(this,'PhonePe')"><span>🟣</span><p>PhonePe</p></div>
+                    <div class="upi-bank" onclick="selectUPI(this,'Paytm')"><span>🔵</span><p>Paytm</p></div>
+                    <div class="upi-bank" onclick="selectUPI(this,'BHIM')"><span>🟠</span><p>BHIM</p></div>
+                    <div class="upi-bank" onclick="selectUPI(this,'Amazon')"><span>🟡</span><p>Amazon Pay</p></div>
+                    <div class="upi-bank" onclick="selectUPI(this,'Other')"><span>⚪</span><p>Other UPI</p></div>
+                </div>
+                <div class="form-group upi-id-input show" id="upi-id-box">
+                    <label>UPI ID</label>
+                    <input type="text" id="upi-id" placeholder="yourname@upi">
+                </div>
+                <form method="POST" action="{% url 'process_payment' %}" id="pay-form-upi">
+                    {% csrf_token %}
+                    <input type="hidden" name="pay_method" id="upi-method-val" value="Demo UPI · GPay">
+                    <button type="submit" class="btn-pay" onclick="startProcessing()">
+                        Pay ₹{{ subtotal }} via UPI
+                    </button>
+                </form>
+                <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:#aaa">No real UPI transaction will occur</p>
+            </div>
+
+            <!-- WALLET PANEL -->
+            <div class="tab-panel" id="panel-wallet">
+                <div class="wallet-list">
+                    <div class="wallet-opt selected" onclick="selectWallet(this,'Paytm Wallet')">
+                        <div class="wallet-icon">🔵</div>
+                        <div><h4>Paytm Wallet</h4><p>Instant payment, no OTP needed</p></div>
+                        <div class="radio"></div>
+                    </div>
+                    <div class="wallet-opt" onclick="selectWallet(this,'Amazon Pay')">
+                        <div class="wallet-icon">🟡</div>
+                        <div><h4>Amazon Pay</h4><p>Use your Amazon balance</p></div>
+                        <div class="radio"></div>
+                    </div>
+                    <div class="wallet-opt" onclick="selectWallet(this,'MobiKwik')">
+                        <div class="wallet-icon">🟠</div>
+                        <div><h4>MobiKwik</h4><p>SuperCash rewards on payment</p></div>
+                        <div class="radio"></div>
+                    </div>
+                    <div class="wallet-opt" onclick="selectWallet(this,'Freecharge')">
+                        <div class="wallet-icon">🟢</div>
+                        <div><h4>Freecharge</h4><p>Fast & secure wallet payment</p></div>
+                        <div class="radio"></div>
+                    </div>
+                </div>
+                <form method="POST" action="{% url 'process_payment' %}" id="pay-form-wallet">
+                    {% csrf_token %}
+                    <input type="hidden" name="pay_method" id="wallet-method-val" value="Demo Wallet · Paytm">
+                    <button type="submit" class="btn-pay" onclick="startProcessing()">
+                        Pay ₹{{ subtotal }} via Wallet
+                    </button>
+                </form>
+                <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:#aaa">No real wallet will be charged</p>
+            </div>
+        </div>
+
+        <!-- Back link -->
+        <p style="margin-top:1rem;text-align:center;font-size:.85rem">
+            <a href="{% url 'checkout' %}" style="color:var(--mid);text-decoration:none">← Back to Checkout</a>
+        </p>
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div class="summary-card">
+        <div class="summary-header">
+            <h3>Order Summary</h3>
+        </div>
+        <div class="summary-body">
+            {% for item in cart_items %}
+            <div class="summary-item">
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <span>₹{{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="summary-total">
+            <span>Total Amount</span>
+            <span>₹{{ subtotal }}</span>
+        </div>
+        <div class="delivery-box">
+            <p>Delivering to</p>
+            <address>{{ address }}</address>
+        </div>
+        <div class="secure-note">🔒 100% Secure Demo Payment</div>
+    </div>
+</div>
+
+<!-- PROCESSING OVERLAY -->
+<div id="processing-overlay">
+    <div class="spinner"></div>
+    <div class="proc-title">Processing Payment...</div>
+    <div class="proc-sub">Please do not close this window</div>
+    <div class="proc-steps">
+        <div class="proc-step active" id="step1">⟳ Verifying payment details</div>
+        <div class="proc-step" id="step2">◎ Connecting to bank</div>
+        <div class="proc-step" id="step3">◎ Confirming transaction</div>
+        <div class="proc-step done" id="step4" style="display:none">✓ Payment successful!</div>
+    </div>
+</div>
+
+<script>
+// ── Tab switching ──────────────────────────────────────
+function switchTab(tab, btn) {
+    document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── Card formatting ────────────────────────────────────
+function fmtCard(el) {
+    let v = el.value.replace(/\D/g,'').slice(0,16);
+    el.value = v.match(/.{1,4}/g)?.join('  ') || '';
+    let disp = v.padEnd(16,'•').match(/.{1,4}/g).join(' ');
+    document.getElementById('preview-num').textContent = disp;
+}
+function fmtExp(el) {
+    let v = el.value.replace(/\D/g,'');
+    if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2,4);
+    el.value = v;
+    document.getElementById('preview-exp').textContent = v || 'MM/YY';
+}
+
+// ── UPI selection ──────────────────────────────────────
+function selectUPI(el, name) {
+    document.querySelectorAll('.upi-bank').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('upi-method-val').value = 'Demo UPI · ' + name;
+}
+
+// ── Wallet selection ───────────────────────────────────
+function selectWallet(el, name) {
+    document.querySelectorAll('.wallet-opt').forEach(w => w.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('wallet-method-val').value = 'Demo Wallet · ' + name;
+}
+
+// ── Processing animation ───────────────────────────────
+function startProcessing() {
+    document.getElementById('processing-overlay').classList.add('show');
+    // animate steps
+    setTimeout(() => {
+        document.getElementById('step1').className = 'proc-step done';
+        document.getElementById('step1').textContent = '✓ Payment details verified';
+        document.getElementById('step2').className = 'proc-step active';
+        document.getElementById('step2').textContent = '⟳ Connecting to bank...';
+    }, 800);
+    setTimeout(() => {
+        document.getElementById('step2').className = 'proc-step done';
+        document.getElementById('step2').textContent = '✓ Bank connected';
+        document.getElementById('step3').className = 'proc-step active';
+        document.getElementById('step3').textContent = '⟳ Confirming transaction...';
+    }, 1800);
+    setTimeout(() => {
+        document.getElementById('step3').className = 'proc-step done';
+        document.getElementById('step3').textContent = '✓ Transaction confirmed';
+        document.getElementById('step4').style.display = 'flex';
+    }, 2800);
+}
+</script>
+</body>
+</html>

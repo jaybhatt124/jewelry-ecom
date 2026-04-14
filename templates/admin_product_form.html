@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}{% if product %}Edit{% else %}Add{% endif %} Item — Admin{% endblock %}
+{% block extra_css %}
+<style>
+.admin-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 70px); }
+.admin-sidebar { background: var(--dark); padding: 2rem 0; position: sticky; top: 70px; height: calc(100vh - 70px); overflow-y: auto; }
+.admin-sidebar h4 { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: #666; padding: 0 1.5rem; margin: 1.5rem 0 0.5rem; }
+.admin-nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.5rem; text-decoration: none; color: #aaa; font-size: 0.85rem; transition: all 0.2s; border-left: 3px solid transparent; }
+.admin-nav-link:hover, .admin-nav-link.active { color: var(--gold); background: rgba(201,168,76,0.08); border-left-color: var(--gold); }
+.admin-main { padding: 2rem; background: #f4f1ec; }
+.add-product-card { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; padding: 2.5rem; max-width: 700px; }
+.add-product-card h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; margin-bottom: 0.5rem; }
+.add-product-card p { color: var(--mid); margin-bottom: 2rem; font-size: 0.9rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.errorlist { list-style: none; color: #dc3545; font-size: 0.85rem; margin-top: 0.3rem; }
+.for-whom-group { display: flex; gap: 1rem; }
+.for-whom-option { flex: 1; }
+.for-whom-option input[type=radio] { display: none; }
+.for-whom-option label {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.75rem; border: 2px solid var(--light-border); border-radius: 4px;
+    cursor: pointer; font-size: 0.85rem; transition: all 0.2s; text-align: center;
+}
+.for-whom-option input:checked + label { border-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--gold-dark); font-weight: 500; }
+.for-whom-option label:hover { border-color: var(--gold-light); }
+.image-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; margin-top: 0.5rem; display: none; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-layout">
+    <nav class="admin-sidebar">
+        <div style="padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);letter-spacing:2px;">Admin Panel</div>
+            <div style="font-size:0.75rem;color:#666;margin-top:0.2rem">{{ request.user.email }}</div>
+        </div>
+        <h4>Overview</h4>
+        <a href="{% url 'admin_dashboard' %}" class="admin-nav-link">📊 Dashboard</a>
+        <h4>Catalogue</h4>
+        <a href="{% url 'admin_add_product' %}" class="admin-nav-link active">➕ Add New Item</a>
+        <a href="{% url 'admin_products' %}" class="admin-nav-link">💎 Manage Items</a>
+        <h4>Orders</h4>
+        <a href="{% url 'admin_orders' %}" class="admin-nav-link">📦 All Orders</a>
+        <h4>Account</h4>
+        <a href="{% url 'home' %}" class="admin-nav-link">🏠 View Store</a>
+        <form method="POST" action="{% url 'logout' %}" style="margin: 0 1rem;">
+            {% csrf_token %}
+            <button type="submit" style="width:100%;background:rgba(220,53,69,0.15);color:#e87d7d;border:1px solid rgba(220,53,69,0.3);padding:0.6rem;border-radius:4px;cursor:pointer;font-family:'Jost';font-size:0.8rem;letter-spacing:1px;margin-top:1rem;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="admin-main">
+        <div class="add-product-card">
+            <h1>{% if product %}Edit Item{% else %}Add New Item{% endif %}</h1>
+            <p>{% if product %}Update the details of this jewellery item{% else %}Add a new jewellery item to your store. It will be visible to customers immediately.{% endif %}</p>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Item Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<ul class="errorlist">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}<ul class="errorlist">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description *</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Price (₹) *</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}<ul class="errorlist">{% for e in form.price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Quantity *</label>
+                        {{ form.stock }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>For Whom *</label>
+                    <div class="for-whom-group">
+                        <div class="for-whom-option">
+                            <input type="radio" name="for_whom" id="fw_women" value="Women" {% if form.for_whom.value == 'Women' or not form.instance.pk and not form.for_whom.value %}{% endif %}>
+                            <label for="fw_women">👩 Women</label>
+                        </div>
+                        <div class="for-whom-option">
+                            <input type="radio" name="for_whom" id="fw_men" value="Men">
+                            <label for="fw_men">👨 Men</label>
+                        </div>
+                        <div class="for-whom-option">
+                            <input type="radio" name="for_whom" id="fw_both" value="Both" checked>
+                            <label for="fw_both">👫 Both</label>
+                        </div>
+                    </div>
+                    {% if form.for_whom.errors %}<ul class="errorlist">{% for e in form.for_whom.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Product Photo</label>
+                    {{ form.image }}
+                    <img id="imagePreview" class="image-preview" alt="Preview">
+                    {% if product and product.image %}
+                    <div style="margin-top:0.5rem">
+                        <img src="{{ product.image.url }}" style="width:120px;height:120px;object-fit:cover;border-radius:4px;border:1px solid var(--light-border)">
+                        <p style="font-size:0.8rem;color:var(--mid);margin-top:0.3rem">Current image — upload new to replace</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div style="display:flex;gap:1rem;margin-top:1rem">
+                    <button type="submit" class="btn btn-gold">
+                        {% if product %}💾 Save Changes{% else %}✨ Add to Store{% endif %}
+                    </button>
+                    <a href="{% url 'admin_products' %}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+// Set radio button if editing
+{% if product %}
+document.querySelector('input[name="for_whom"][value="{{ product.for_whom }}"]').checked = true;
+{% endif %}
+
+// Image preview
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const img = document.getElementById('imagePreview');
+            img.src = ev.target.result;
+            img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

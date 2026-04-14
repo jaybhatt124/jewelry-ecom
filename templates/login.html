@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — LuxeAura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A84C;
+            --gold-light: #E8C97A;
+            --gold-dark: #8B6914;
+            --cream: #FAF7F2;
+            --dark: #1A1614;
+            --mid: #6B5E52;
+            --light-border: #E8DDD0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Jost', sans-serif;
+            background: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Decorative background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            right: -20%;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30%;
+            left: -15%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 440px;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Logo at top */
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-logo h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.8rem;
+            font-weight: 300;
+            color: var(--gold);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+        .auth-logo h1 em { color: #fff; font-style: italic; }
+        .auth-logo p {
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #666;
+            margin-top: 0.4rem;
+        }
+
+        /* Card */
+        .auth-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 12px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+        }
+        .auth-card h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+        .auth-card .subtitle {
+            font-size: 0.82rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Form */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .form-group input:focus {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.05);
+        }
+        .form-group input::placeholder { color: #555; }
+
+        /* Forgot password link */
+        .forgot-link {
+            text-align: right;
+            margin-top: -0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .forgot-link a {
+            font-size: 0.78rem;
+            color: var(--gold);
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .forgot-link a:hover { opacity: 1; }
+
+        /* Submit button */
+        .btn-submit {
+            width: 100%;
+            padding: 0.95rem;
+            background: var(--gold);
+            color: var(--dark);
+            border: none;
+            border-radius: 6px;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+        .btn-submit:hover { background: var(--gold-light); }
+        .btn-submit:active { transform: scale(0.99); }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+        .divider span { font-size: 0.75rem; color: #555; letter-spacing: 2px; }
+
+        /* Register link */
+        .auth-footer {
+            text-align: center;
+        }
+        .auth-footer p { font-size: 0.85rem; color: #666; }
+        .auth-footer a {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .auth-footer a:hover { color: var(--gold-light); }
+
+        /* Error messages */
+        .error-box {
+            background: rgba(220,53,69,0.1);
+            border: 1px solid rgba(220,53,69,0.3);
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.85rem;
+            color: #f08090;
+        }
+        .field-error {
+            font-size: 0.78rem;
+            color: #e07080;
+            margin-top: 0.3rem;
+        }
+
+        /* Alert messages from Django */
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+        .alert-success { background: rgba(40,167,69,0.1); border: 1px solid rgba(40,167,69,0.3); color: #6fcf87; }
+        .alert-error { background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.3); color: #f08090; }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-logo">
+            <h1>Luxe<em>Aura</em></h1>
+            <p>Fine Jewellery</p>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="auth-card">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to explore our collection</p>
+
+            {% if form.non_field_errors %}
+            <div class="error-box">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" placeholder="Enter your username"
+                           value="{{ form.username.value|default:'' }}" autocomplete="username">
+                    {% if form.username.errors %}
+                    <div class="field-error">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Enter your password" autocomplete="current-password">
+                    {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="forgot-link">
+                    <a href="{% url 'forgot_password' %}">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn-submit">Sign In</button>
+            </form>
+
+            <div class="divider"><span>or</span></div>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{% url 'register' %}">Create one free</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

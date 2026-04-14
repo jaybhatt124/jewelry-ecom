@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }} — Admin{% endblock %}
+{% block extra_css %}
+<style>
+.admin-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 70px); }
+.admin-sidebar { background: var(--dark); padding: 2rem 0; position: sticky; top: 70px; height: calc(100vh - 70px); overflow-y: auto; }
+.admin-sidebar h4 { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: #666; padding: 0 1.5rem; margin: 1.5rem 0 0.5rem; }
+.admin-nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.5rem; text-decoration: none; color: #aaa; font-size: 0.85rem; transition: all 0.2s; border-left: 3px solid transparent; }
+.admin-nav-link:hover, .admin-nav-link.active { color: var(--gold); background: rgba(201,168,76,0.08); border-left-color: var(--gold); }
+.admin-main { padding: 2rem; background: #f4f1ec; }
+.order-detail-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+.detail-card { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; overflow: hidden; }
+.detail-card-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--light-border); background: #faf7f2; }
+.detail-card-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; }
+.detail-card-body { padding: 1.5rem; }
+.info-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid #f5f0ea; font-size: 0.9rem; }
+.info-row span:first-child { color: var(--mid); }
+.item-row { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid #f5f0ea; }
+.item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+.item-img-placeholder { width: 50px; height: 50px; background: linear-gradient(135deg,#f5efe6,#ede0d0); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-layout">
+    <nav class="admin-sidebar">
+        <div style="padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);letter-spacing:2px;">Admin Panel</div>
+        </div>
+        <h4>Overview</h4>
+        <a href="{% url 'admin_dashboard' %}" class="admin-nav-link">📊 Dashboard</a>
+        <h4>Catalogue</h4>
+        <a href="{% url 'admin_add_product' %}" class="admin-nav-link">➕ Add New Item</a>
+        <a href="{% url 'admin_products' %}" class="admin-nav-link">💎 Manage Items</a>
+        <h4>Orders</h4>
+        <a href="{% url 'admin_orders' %}" class="admin-nav-link active">📦 All Orders</a>
+        <h4>Account</h4>
+        <a href="{% url 'home' %}" class="admin-nav-link">🏠 View Store</a>
+        <form method="POST" action="{% url 'logout' %}" style="margin: 0 1rem;">
+            {% csrf_token %}
+            <button type="submit" style="width:100%;background:rgba(220,53,69,0.15);color:#e87d7d;border:1px solid rgba(220,53,69,0.3);padding:0.6rem;border-radius:4px;cursor:pointer;font-family:'Jost';font-size:0.8rem;letter-spacing:1px;margin-top:1rem;">Logout</button>
+        </form>
+    </nav>
+    <div class="admin-main">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+            <div>
+                <a href="{% url 'admin_orders' %}" style="color:var(--mid);text-decoration:none;font-size:0.85rem">← Back to Orders</a>
+                <h1 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:400;margin-top:0.3rem">Order #{{ order.id }}</h1>
+            </div>
+            <div style="display:flex;gap:0.7rem">
+                <a href="{% url 'admin_download_bill' order.id %}" class="btn btn-gold">📄 Download Bill</a>
+            </div>
+        </div>
+
+        <div class="order-detail-grid">
+            <div>
+                <div class="detail-card" style="margin-bottom:1.5rem">
+                    <div class="detail-card-header"><h3>Order Items</h3></div>
+                    <div class="detail-card-body">
+                        {% for item in order.items.all %}
+                        <div class="item-row">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" class="item-img" alt="{{ item.product.name }}">
+                            {% else %}
+                            <div class="item-img-placeholder">💍</div>
+                            {% endif %}
+                            <div style="flex:1">
+                                <div style="font-weight:500">{{ item.product.name }}</div>
+                                <div style="font-size:0.8rem;color:var(--mid)">{{ item.product.category.name }} · {{ item.product.for_whom }}</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div>₹{{ item.price }} × {{ item.quantity }}</div>
+                                <div style="font-weight:600;color:var(--gold-dark)">₹{{ item.subtotal }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div style="display:flex;justify-content:flex-end;padding-top:1rem;font-size:1.1rem;font-weight:600;color:var(--gold-dark)">
+                            Total: ₹{{ order.total_price }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="detail-card" style="margin-bottom:1rem">
+                    <div class="detail-card-header"><h3>Customer Info</h3></div>
+                    <div class="detail-card-body">
+                        <div class="info-row"><span>Name</span><span>{{ order.user.username }}</span></div>
+                        <div class="info-row"><span>Email</span><span>{{ order.user.email }}</span></div>
+                        <div class="info-row"><span>Order Date</span><span>{{ order.created_at|date:"M d, Y" }}</span></div>
+                        <div class="info-row"><span>Payment</span><span>Cash on Delivery</span></div>
+                        <div style="margin-top:0.8rem">
+                            <div style="font-size:0.75rem;color:var(--mid);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.3rem">Delivery Address</div>
+                            <div style="font-size:0.9rem;line-height:1.6">{{ order.address }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-card-header"><h3>Order Status</h3></div>
+                    <div class="detail-card-body">
+                        <form method="POST" action="{% url 'admin_update_order_status' order.id %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label>Update Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-gold" style="width:100%;text-align:center">Update Status</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — LuxeAura{% endblock %}
+{% block extra_css %}
+<style>
+.profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; padding: 2rem 0; }
+.profile-sidebar { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; padding: 2rem; height: fit-content; text-align: center; }
+.profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1rem; overflow: hidden; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; }
+.profile-email { color: var(--mid); font-size: 0.85rem; margin-top: 0.3rem; }
+.profile-stat { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--light-border); }
+.profile-stat-num { font-size: 2rem; font-weight: 600; color: var(--gold); font-family: 'Cormorant Garamond', serif; }
+.profile-stat-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); }
+.profile-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--light-border); margin-bottom: 2rem; }
+.tab-btn { padding: 0.75rem 1.5rem; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; font-family: 'Jost', sans-serif; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; color: var(--mid); margin-bottom: -2px; transition: all 0.2s; }
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.form-card { background: #fff; border: 1px solid var(--light-border); border-radius: 8px; padding: 2rem; }
+.form-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 1.5rem; }
+.errorlist { list-style: none; color: #dc3545; font-size: 0.85rem; margin-top: 0.3rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>My Profile</h1>
+    <p>Manage your account</p>
+</div>
+<div class="container">
+    <div class="profile-layout">
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}">
+                {% else %}
+                👤
+                {% endif %}
+            </div>
+            <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+            <div class="profile-email">{{ user.email }}</div>
+            <div class="profile-stat">
+                <div class="profile-stat-num">{{ total_orders }}</div>
+                <div class="profile-stat-label">Total Orders</div>
+            </div>
+            <div style="margin-top:1.5rem">
+                <a href="{% url 'order_history' %}" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block">View Orders</a>
+            </div>
+        </div>
+        <div>
+            <div class="profile-tabs">
+                <button class="tab-btn active" onclick="showTab('profile-tab', this)">Profile Info</button>
+                <button class="tab-btn" onclick="showTab('password-tab', this)">Change Password</button>
+            </div>
+
+            <div id="profile-tab" class="tab-content active">
+                <div class="form-card">
+                    <h3>Account Details</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="update_profile" value="1">
+                        <div class="form-group">
+                            <label>Username</label>
+                            {{ user_form.username }}
+                            {% if user_form.username.errors %}<ul class="errorlist">{% for e in user_form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            {{ user_form.email }}
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            {{ profile_form.phone }}
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            {{ profile_form.address }}
+                        </div>
+                        <div class="form-group">
+                            <label>Profile Picture</label>
+                            {{ profile_form.profile_picture }}
+                        </div>
+                        <button type="submit" class="btn btn-gold">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="password-tab" class="tab-content">
+                <div class="form-card">
+                    <h3>Change Password</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="change_password" value="1">
+                        {% for field in password_form %}
+                        <div class="form-group">
+                            <label>{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-gold">Update Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+</script>
+{% endblock %}

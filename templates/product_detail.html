@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — LuxeAura{% endblock %}
+{% block extra_css %}
+<style>
+.product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; padding: 3rem 0; }
+.product-image { border-radius: 8px; overflow: hidden; background: linear-gradient(135deg,#f5efe6,#ede0d0); min-height: 500px; display: flex; align-items: center; justify-content: center; font-size: 8rem; }
+.product-image img { width: 100%; height: 500px; object-fit: cover; }
+.product-info { padding: 1rem 0; }
+.product-category { font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+.product-name { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 1rem; line-height: 1.2; }
+.product-price { font-size: 2rem; color: var(--gold-dark); font-weight: 500; margin-bottom: 1.5rem; }
+.product-desc { color: var(--mid); line-height: 1.8; margin-bottom: 2rem; }
+.product-meta { border-top: 1px solid var(--light-border); padding-top: 1.5rem; margin-bottom: 2rem; }
+.product-meta-row { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; border-bottom: 1px solid #f5f0ea; }
+.product-meta-row span:first-child { color: var(--mid); }
+.action-btns { display: flex; gap: 1rem; }
+.reviews-section { margin-top: 4rem; border-top: 1px solid var(--light-border); padding-top: 3rem; }
+.review-card { background: #fff; border: 1px solid var(--light-border); padding: 1.5rem; border-radius: 4px; margin-bottom: 1rem; }
+.review-stars { color: var(--gold); margin-bottom: 0.5rem; }
+.review-author { font-size: 0.8rem; color: var(--mid); margin-top: 0.5rem; }
+.review-form { background: #fff; border: 1px solid var(--light-border); padding: 2rem; border-radius: 4px; margin-top: 2rem; }
+.review-form h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 1.5rem; }
+.errorlist { list-style: none; color: #dc3545; font-size: 0.85rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <p style="padding:1.5rem 0; font-size:0.85rem; color:var(--mid)">
+        <a href="{% url 'home' %}" style="color:var(--mid);text-decoration:none">Home</a> /
+        <a href="{% url 'shop' %}" style="color:var(--mid);text-decoration:none">Shop</a> /
+        {{ product.name }}
+    </p>
+    <div class="product-detail">
+        <div class="product-image">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+            💍
+            {% endif %}
+        </div>
+        <div class="product-info">
+            <div class="product-category">{{ product.category.name }}</div>
+            <h1 class="product-name">{{ product.name }}</h1>
+            <div class="product-price">₹{{ product.price }}</div>
+            <p class="product-desc">{{ product.description }}</p>
+            <div class="product-meta">
+                <div class="product-meta-row"><span>For</span><span><span class="tag tag-{{ product.for_whom|lower }}">{{ product.for_whom }}</span></span></div>
+                <div class="product-meta-row"><span>Availability</span><span>{% if product.stock > 0 %}✅ In Stock ({{ product.stock }} left){% else %}❌ Out of Stock{% endif %}</span></div>
+                <div class="product-meta-row"><span>Rating</span><span>⭐ {{ product.average_rating }}/5 ({{ product.review_count }} reviews)</span></div>
+            </div>
+            <div class="action-btns">
+                {% if product.stock > 0 %}
+                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-gold">Add to Cart</a>
+                {% else %}
+                <span class="btn" style="background:#eee;color:#999;cursor:not-allowed;">Out of Stock</span>
+                {% endif %}
+                <a href="{% url 'shop' %}" class="btn btn-outline">← Back to Shop</a>
+            </div>
+        </div>
+    </div>
+
+    {% if related_products %}
+    <div style="margin-top:3rem">
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;margin-bottom:1.5rem">You May Also Like</h2>
+        <div class="product-grid">
+            {% for p in related_products %}
+            <div class="product-card">
+                {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}">
+                {% else %}<div class="product-card-img-placeholder">💎</div>{% endif %}
+                <div class="product-card-body">
+                    <div class="product-card-name">{{ p.name }}</div>
+                    <div class="product-card-price">₹{{ p.price }}</div>
+                </div>
+                <div class="product-card-footer">
+                    <a href="{% url 'product_detail' p.id %}" class="btn btn-outline btn-sm">View</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="reviews-section">
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;margin-bottom:2rem">Customer Reviews</h2>
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+                <p>{{ review.comment }}</p>
+                <p class="review-author">— {{ review.user.username }} · {{ review.created_at|date:"M d, Y" }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color:var(--mid)">No reviews yet. Be the first to review!</p>
+        {% endif %}
+
+        {% if user.is_authenticated and not user_has_reviewed %}
+        <div class="review-form">
+            <h3>Leave a Review</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Rating</label>
+                    {{ review_form.rating }}
+                </div>
+                <div class="form-group">
+                    <label>Your Review</label>
+                    {{ review_form.comment }}
+                </div>
+                <button type="submit" class="btn btn-gold">Submit Review</button>
+            </form>
+        </div>
+        {% elif not user.is_authenticated %}
+        <div class="review-form" style="text-align:center">
+            <p style="color:var(--mid)">Please <a href="{% url 'login' %}" style="color:var(--gold)">login</a> to leave a review.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
