@@ -1,13 +1,14 @@
 from pathlib import Path
 import os
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-^m#rh^z&_a_56s+eabn^b($^n#w6r3g_(s-ifct!dbc=ha^sv7'
+SECRET_KEY = config('SECRET_KEY')
 
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -83,12 +84,12 @@ LOGIN_REDIRECT_URL = '/'
 # Fill in YOUR details below then save the file
 # ─────────────────────────────────────────────────────────────
 EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST      = 'smtp.gmail.com'          # Gmail SMTP host
-EMAIL_PORT      = 587                        # TLS port
-EMAIL_USE_TLS   = True
-EMAIL_HOST_USER     = 'jayybhatt350@gmail.com'       # <-- your Gmail
-EMAIL_HOST_PASSWORD = 'gbtfffvesebabkkw'     # <-- Gmail App Password (no spaces)
-DEFAULT_FROM_EMAIL  = 'LuxeAura <jayybhatt350@gmail.com>'  # <-- same Gmail
+EMAIL_HOST      = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT      = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS   = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER     = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL')
 
 # OTP expires after this many minutes
-OTP_EXPIRE_MINUTES = 10
+OTP_EXPIRE_MINUTES = config('OTP_EXPIRE_MINUTES', default=10, cast=int)

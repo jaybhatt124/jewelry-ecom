@@ -42,11 +42,18 @@ Navigate to the project directory containing your `manage.py` file and activate 
 source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+### 3. Set Up Environment Variables
+Copy the example env file and fill in your values:
+```bash
+cp .env.example .env
+```
+Then open `.env` and update `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and `SECRET_KEY` with your real values.
+
+### 4. Install Dependencies
 *(Note: If the `venv` already has Django installed, you may skip this step)*
 If installing on a fresh clone, run:
 ```bash
-pip install django pillow
+pip install django pillow python-decouple
 ```
 
 ### 4. Apply Database Migrations
